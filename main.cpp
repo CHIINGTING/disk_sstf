@@ -13,21 +13,17 @@
 #include <algorithm>
 using namespace std;
 int sstfAlgo(int , int , vector<int>& );
-bool findFirstSlot(int&, vector<int>&, vector<int>&, vector<int>&);
+int findFirstSlot(int&, vector<int>, vector<int>&, vector<int>&);
 int traceSlot(int&, vector<int>&, vector<int>&);
-string fatchFile();
-void stringEarse(int, vector<string>& );
-int trace(int&, vector<int>& , vector<int>& );
 
-
+/* algo a-sstf */
 int sstfAlgo(int bound, int head, vector<int>& slot){
     int total = 0;
-    vector<int> aws;
-    vector<int> firstRequest;
+    vector<int> aws; //the head trace postion
+    vector<int> firstRequest; // top 3 data
     for(int i=0;i<3;i++){
         firstRequest.push_back(slot[i]);
     }
-
 
     sort(firstRequest.begin(),firstRequest.end());
     total += findFirstSlot(head, firstRequest, slot, aws);
@@ -39,7 +35,8 @@ int sstfAlgo(int bound, int head, vector<int>& slot){
     return total;
 }
 
-bool findFirstSlot(int& head, vector<int>& firstRequest, vector<int>& slot, vector<int>& aws){
+// first trace for sstf
+int findFirstSlot(int& head, vector<int> firstRequest, vector<int>& slot, vector<int>& aws){
     aws.push_back(head);
     int value = 300;
     int tempHead = 0;
@@ -54,6 +51,7 @@ bool findFirstSlot(int& head, vector<int>& firstRequest, vector<int>& slot, vect
     }
     head = tempHead;
     aws.push_back(head);
+
     for(auto i=0;i<slot.size();i++){
         if(head == slot[i]){
             slot.erase(slot.begin()+i);
@@ -62,49 +60,68 @@ bool findFirstSlot(int& head, vector<int>& firstRequest, vector<int>& slot, vect
     return value;
 }
 
+// last trace for c-scan
 int traceSlot(int& head, vector<int>& slot, vector<int>& aws){
     int total = abs(head - slot[0]);
+    bool check = head<slot[0];
+    vector<int> left;
+    vector<int> right;
     head = slot[0];
     slot.erase(slot.begin());
     aws.push_back(head);
-    sort(slot.begin(),slot.end());
+
+    for(auto s:slot){
+        if(s<head){
+            left.push_back(s);
+        } else
+            right.push_back(s);
+    }
     size_t size = slot.size();
     for(auto i=0;i<size;i++){
-        total += trace(head, slot, aws);
+        slot.pop_back();
+    }
+
+    sort(left.begin(),left.end(),[=](auto a,auto b){
+        return a>b;
+    });
+    sort(right.begin(),right.end(),[=](auto a,auto b){
+        return a<b;
+    });
+
+    if(check){
+        for(int i=0;i<right.size();i++){
+            total += abs(head-right[i]);
+            head = right[i];
+            aws.push_back(head);
+        }
+
+        for(int i=0;i<left.size();i++){
+            total += abs(head-left[i]);
+            head = left[i];
+            aws.push_back(head);
+        }
+    } else{
+        for(int i=0;i<left.size();i++) {
+            total += abs(head - left[i]);
+            head = left[i];
+            aws.push_back(head);
+        }
+        for(int i=0;i<right.size();i++){
+            total += abs(head-right[i]);
+            head = right[i];
+            aws.push_back(head);
+        }
     }
     return total;
 }
 
-int trace(int& head,vector<int>& slot, vector<int>& aws){
-    int value=300;
-    int tempHead = 0;
-    int postion = 0;
-    for (auto i = 0; i < slot.size(); ++i) {
-        if(value> abs(head - slot[i])){
-            value = abs(head - slot[i]);
-            postion=i;
-            tempHead=slot[i];
-        } else
-            break;
-    }
-    head=tempHead;
-    aws.push_back(head);
-    slot.erase(slot.begin()+postion);
-    return value;
-}
-
-
+/* get test value */
+//get location
 string fatchFile(){
-    string configfile = "./test.txt";
+    string configfile = "yout test file name"; // /filelocation/filename
     return configfile;
 }
-
-void stringEarse(int count, vector<string>& str){
-    for(int i=0;i<count;i++){
-        str.pop_back();
-    }
-}
-
+//get the test data
 void getData(int& bound, int& head, vector<int>& slot){
     vector<string> array;
     string space_delimter=" ";
@@ -129,11 +146,11 @@ void getData(int& bound, int& head, vector<int>& slot){
             switch (data) {
                 case 1:
                     bound = stoi(array[0]);
-                    stringEarse(count, array);
+                    array.pop_back();
                     break;
                 case 2:
                     head = stoi(array[0]);
-                    stringEarse(count, array);
+                    array.pop_back();
                     break;
                 case 3:
                     for(string s:array){
@@ -148,15 +165,16 @@ void getData(int& bound, int& head, vector<int>& slot){
     }
 }
 
-
+/* main code */
 int main() {
     vector<int> slot;
     int bound=0;
     int head = 0;
     int total = 0;
     getData(bound, head, slot);
+
     total = sstfAlgo(bound, head, slot);
-    cout<<endl;
+    cout<<"Positions: ";
     for(auto value:slot){
         cout<<value<<" ";
     }
