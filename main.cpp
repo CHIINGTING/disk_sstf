@@ -95,7 +95,7 @@ int trace(int& head,vector<int>& slot, vector<int>& aws){
 
 
 string fatchFile(){
-    string configfile = "/Users/deep.huang/Desktop/OOP_project/HDD_Algo/test.txt";
+    string configfile = "./test.txt";
     return configfile;
 }
 
