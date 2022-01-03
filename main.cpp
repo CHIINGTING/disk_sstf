@@ -1,11 +1,3 @@
-/*
-* SSTF-的運作如下，
- 1. 在判斷哪一個request為下一個request時，從queue中最前面3個request中，去找距離最近的request，然後依序完成。
- 2. 如果有兩個request距離一樣遠，則按照磁頭移動方向來決定。
- 3. 如果無法 決定磁頭移動方向，則選擇cylinder比較小的request。
-程式需要輸出(1) 磁頭從目前位置開始，每次移動停留的位置，(2) 總共移動的距離。
- */
-
 #include <iostream>
 #include <vector>
 #include <string>
