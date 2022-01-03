@@ -4,7 +4,6 @@
  2. 如果有兩個request距離一樣遠，則按照磁頭移動方向來決定。
  3. 如果無法 決定磁頭移動方向，則選擇cylinder比較小的request。
 程式需要輸出(1) 磁頭從目前位置開始，每次移動停留的位置，(2) 總共移動的距離。
-
  */
 
 #include <iostream>
@@ -13,39 +12,35 @@
 #include <fstream>
 #include <algorithm>
 using namespace std;
-void sstfAlgo(int , int , vector<int> );
-bool findFirstSlot(int&, int &, vector<int>&, vector<int>&, vector<int>&);
+int sstfAlgo(int , int , vector<int>& );
+bool findFirstSlot(int&, vector<int>&, vector<int>&, vector<int>&);
 int traceSlot(int&, vector<int>&, vector<int>&);
 string fatchFile();
 void stringEarse(int, vector<string>& );
-void valueEarse(int& head, vector<int>& slot){
-    for(auto i=0;i<slot.size();i++){
-        if(head==slot[i]){
-            slot.erase(slot.begin()+i);
-            break;
-        }
-    }
-}
+int trace(int&, vector<int>& , vector<int>& );
 
 
-
-void sstfAlgo(int bound, int head, vector<int> slot){
-    //cout<<"in sstf";
-    // first 3 request
+int sstfAlgo(int bound, int head, vector<int>& slot){
     int total = 0;
     vector<int> aws;
-    aws.push_back(head);
     vector<int> firstRequest;
     for(int i=0;i<3;i++){
         firstRequest.push_back(slot[i]);
     }
+
+
     sort(firstRequest.begin(),firstRequest.end());
-    total += findFirstSlot(head, total, firstRequest, slot, aws);
-  //  cout <<total;
-   // total += traceSlot(head, slot,aws);
+    total += findFirstSlot(head, firstRequest, slot, aws);
+    total += traceSlot(head, slot,aws);
+
+    for(auto value: aws){
+        slot.push_back(value);
+    }
+    return total;
 }
 
 bool findFirstSlot(int& head, vector<int>& firstRequest, vector<int>& slot, vector<int>& aws){
+    aws.push_back(head);
     int value = 300;
     int tempHead = 0;
     for(auto i=0;i<firstRequest.size();i++){
@@ -56,26 +51,48 @@ bool findFirstSlot(int& head, vector<int>& firstRequest, vector<int>& slot, vect
         else {
             break;
         }
-        cout<<"value: "<<value<<" ";
     }
     head = tempHead;
     aws.push_back(head);
-    valueEarse(head, slot);
-
+    for(auto i=0;i<slot.size();i++){
+        if(head == slot[i]){
+            slot.erase(slot.begin()+i);
+        }
+    }
     return value;
 }
 
-int traceSlot(int& head, vector<int>& slot, vector<int>&aws){
+int traceSlot(int& head, vector<int>& slot, vector<int>& aws){
     int total = abs(head - slot[0]);
     head = slot[0];
-    sort(slot.begin(),slot.end(),[](int first, int second){
-        return first<second;
-    });
-    for(auto i:slot){
-        cout<<i<<" ";
+    slot.erase(slot.begin());
+    aws.push_back(head);
+    sort(slot.begin(),slot.end());
+    size_t size = slot.size();
+    for(auto i=0;i<size;i++){
+        total += trace(head, slot, aws);
     }
     return total;
 }
+
+int trace(int& head,vector<int>& slot, vector<int>& aws){
+    int value=300;
+    int tempHead = 0;
+    int postion = 0;
+    for (auto i = 0; i < slot.size(); ++i) {
+        if(value> abs(head - slot[i])){
+            value = abs(head - slot[i]);
+            postion=i;
+            tempHead=slot[i];
+        } else
+            break;
+    }
+    head=tempHead;
+    aws.push_back(head);
+    slot.erase(slot.begin()+postion);
+    return value;
+}
+
 
 string fatchFile(){
     string configfile = "/Users/deep.huang/Desktop/OOP_project/HDD_Algo/test.txt";
@@ -136,8 +153,14 @@ int main() {
     vector<int> slot;
     int bound=0;
     int head = 0;
+    int total = 0;
     getData(bound, head, slot);
-    sstfAlgo(bound, head, slot);
+    total = sstfAlgo(bound, head, slot);
+    cout<<endl;
+    for(auto value:slot){
+        cout<<value<<" ";
+    }
+    cout<<endl<<"total: "<<total;
 
     return 0;
 }
